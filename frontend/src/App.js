@@ -19,9 +19,12 @@ function App() {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/api/books`);
-      setBooks(response.data);
+      // Ensure we always set an array
+      setBooks(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Номын жагсаалтыг авахад алдаа гарлаа:', error);
+      // Set empty array on error
+      setBooks([]);
     } finally {
       setLoading(false);
     }
@@ -140,41 +143,42 @@ function App() {
       <section className="books-section">
         <h2>
           <span className="icon icon-book"></span>
-          Бүх ном ({books.length})
+          Бүх ном ({Array.isArray(books) ? books.length : 0})
         </h2>
 
-        {books.length === 0 ? (
+        {Array.isArray(books) && books.length === 0 ? (
           <div className="empty-state">
             <h3>Номын жагсаалт хоосон байна</h3>
             <p>Эхний номоо нэмж эхлээрэй!</p>
           </div>
         ) : (
           <div className="books-grid">
-            {books.map((book) => (
-              <div key={book._id} className="book-card">
-                <div className="book-info">
-                  <h3 className="book-title">{book.title}</h3>
-                  <p className="book-author">Зохиогч: {book.author}</p>
-                  <p className="book-year">Он: {book.year}</p>
+            {Array.isArray(books) &&
+              books.map((book) => (
+                <div key={book._id} className="book-card">
+                  <div className="book-info">
+                    <h3 className="book-title">{book.title}</h3>
+                    <p className="book-author">Зохиогч: {book.author}</p>
+                    <p className="book-year">Он: {book.year}</p>
+                  </div>
+                  <div className="book-actions">
+                    <button
+                      onClick={() => startEditing(book)}
+                      className="action-btn edit-btn"
+                      disabled={loading}
+                    >
+                      <span className="icon icon-edit"></span> Засах
+                    </button>
+                    <button
+                      onClick={() => handleDelete(book._id)}
+                      className="action-btn delete-btn"
+                      disabled={loading}
+                    >
+                      <span className="icon icon-delete"></span> Устгах
+                    </button>
+                  </div>
                 </div>
-                <div className="book-actions">
-                  <button
-                    onClick={() => startEditing(book)}
-                    className="action-btn edit-btn"
-                    disabled={loading}
-                  >
-                    <span className="icon icon-edit"></span> Засах
-                  </button>
-                  <button
-                    onClick={() => handleDelete(book._id)}
-                    className="action-btn delete-btn"
-                    disabled={loading}
-                  >
-                    <span className="icon icon-delete"></span> Устгах
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </section>
